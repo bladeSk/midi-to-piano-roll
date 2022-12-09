@@ -1,0 +1,127 @@
+html, button, input, textarea, select {
+	font: 14px/1.3 'Helvetica Neue', 'Helvetica', sans-serif;
+}
+
+body {
+	background: #fff;
+	margin: 16px;
+}
+
+button {
+	font-weight: bold;
+	padding: 4px 12px;
+}
+
+.header {
+	display: flex;
+	align-items: baseline;
+}
+
+.header > h1 {
+	flex-grow: 1;
+	margin-top: 0;
+}
+
+.header > div {
+	margin-left: 24px;
+}
+
+.trackRow {
+	display: flex;
+	align-items: flex-start;
+	flex-direction: row;
+}
+
+.trackRow:nth-child(odd) .previewRoll {
+	background: #eee;
+}
+
+.trackRow:nth-child(even) .previewRoll {
+	background: #fff;
+}
+
+.trackRow__num {
+	display: inline-block;
+	font-weight: bold;
+	width: 24px;
+}
+
+.trackRow__name {
+	display: inline-block;
+	width: 200px;
+	margin-right: 16px;
+}
+
+.trackRow__transpose {
+	width: 64px;
+}
+
+.trackRow__preview {
+	flex-grow: 1;
+	margin-left: 16px;
+}
+
+.trackRow__preview .previewRoll {
+	display: block;
+	width: 100%;
+}
+
+.trackRow + .trackRow .previewRoll {
+	border-top: solid 1px #999;
+}
+
+.previewRoll__bars path {
+	stroke: #bbb;
+	stroke-width: 0.05px;
+}
+
+.cfg {
+	margin-top: 24px;
+}
+
+.cfg > div {
+	margin-top: 16px;
+}
+
+.cfg label {
+	color: #666;
+}
+
+.cfg label + label {
+	margin-left: 16px;
+}
+
+.cfg input[type=text] {
+	width: 48px;
+}
+
+.cfg__actions {
+	text-align: center;
+}
+
+.cfg__actions button + button {
+	margin-left: 16px;
+}
+
+.pianoRoll {
+	display: block;
+	/*width: 100%;*/
+	margin: 0 auto 48px;
+}
+
+.pianoRoll:last-child {
+	margin-bottom: 0;
+}
+
+@media screen and (prefers-color-scheme: dark) {
+	body {
+		background: #000;
+		color: #999;
+	}
+}
+
+@media print {
+	#header, #controls {
+		display: none;
+	}
+}

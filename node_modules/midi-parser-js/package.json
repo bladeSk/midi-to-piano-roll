@@ -1,0 +1,27 @@
+{
+    "name": "midi-parser-js",
+    "description": "JSON Human readable MIDI sequences. Read from ArrayBuffers, Base64 encoded strings, or FileInput Element in Browsers.",
+    "version": "4.0.4",
+    "main" : "./src/main.js",
+    "keywords": [
+        "midi json",
+        "midi parser",
+        "midi reader",
+        "midi",
+        "MIDI",
+        "midi browser",
+        "import midi",
+        "midi js",
+        "midi standard",
+        "read midi file",
+        "parse midi"
+    ],
+    "author": "colxi",
+    "license": "GPL",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/colxi/midi-parser-js.git"
+    },
+    "homepage": "https://github.com/colxi/midi-parser-js#readme",
+    "dependencies": {}
+}
