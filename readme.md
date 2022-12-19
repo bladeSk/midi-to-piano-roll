@@ -6,9 +6,14 @@ A tool that converts MIDI files into printable piano rolls. Primarily intended f
 
 You can use the tool [right here](https://bladeSk.github.io/midi-to-piano-roll). Just drop your local MIDI files, tweak some knobs and print.
 
+
+## Issues
+
+If you have a MIDI file that doesn't display correctly, feel free to create an issue and attach it. Notes not mapping to bars correctly are most likely an issue with the file itself and should be easily correctable by tweaking the MIDI tempo field.
+
 ## Local usage
 
-Clone this repo, run `npm i` or `yarn` and open index.html in your browser.
+Clone this repo, run `npm i` or `yarn` and open `index.html` in your browser.
 
 ## Usage as a Node.js library
 
