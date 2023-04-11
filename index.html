@@ -198,6 +198,7 @@
 				sessionStorage['config'] = JSON.stringify({
 					title: this.files[0].name.replace(/\..*$/, '').replace(/_/g, ' '),
 					...PianoRollSvg.getDefaultConfig(),
+					splitSVGs: true,
 				})
 				this.value = null
 				load(sessionStorage['midiB64'], sessionStorage['filename'], JSON.parse(sessionStorage['config']))
