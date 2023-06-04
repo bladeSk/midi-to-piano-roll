@@ -1,20 +1,4 @@
 (function(){
-	const defaultConfig = {
-		barsPerRow: 4,
-		barSubdivisions: 4,
-		width: 960,
-		lineHeight: 10,
-		rowSpacing: 48,
-		tracksToRender: { 0: true },
-		transposeTracks: {},
-		staggered: true,
-		splitSVGs: false,
-		trimStart: null,
-		trimEnd: null,
-		timeDivision: null,
-		removeShorterThan: 4,
-	}
-
 	const blackKeys = { 1: !0, 3: !0, 6: !0, 8: !0, 10: !0 }
 	const fullSteps = { 0: !0, 5: !0 }
 	const styles = `
@@ -50,7 +34,21 @@
 		}
 
 		static getDefaultConfig() {
-			return JSON.parse(JSON.stringify(defaultConfig))
+			return {
+				barsPerRow: 4,
+				barSubdivisions: 4,
+				width: 960,
+				lineHeight: 10,
+				rowSpacing: 48,
+				tracksToRender: { 0: true },
+				transposeTracks: {},
+				staggered: true,
+				splitSVGs: false,
+				trimStart: null,
+				trimEnd: null,
+				timeDivision: null,
+				removeShorterThan: 4,
+			}
 		}
 
 		get _barDuration() {
@@ -82,7 +80,7 @@
 				let width = Math.max(0.1, note.duration / duration * 100)
 				let x = note.time / duration * 100
 				let y = highestNote - note.note
-				svg.push(`<rect class="previewRoll__note" width="${width}" height="1" transform="translate(${x + 0.5} ${y})"/>`)
+				svg.push(`<rect class="previewRoll__note" width="${width}" height="1" transform="translate(${x} ${y})"/>`)
 			}
 
 			return svg.toString()
@@ -92,7 +90,7 @@
 		 * @returns a SVG of the loaded MIDI file
 		 */
 		render(config = {}) {
-			this._config = { ...defaultConfig, ...config }
+			this._config = { ...PianoRollSvg.getDefaultConfig(), ...config }
 
 			let width = this._config.width + 1
 
