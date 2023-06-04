@@ -26,6 +26,17 @@ button {
 	margin-left: 24px;
 }
 
+.tracks {
+	position: relative;
+}
+
+.tracks__shroud {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.2);
+}
+
 .trackRow {
 	display: flex;
 	align-items: flex-start;

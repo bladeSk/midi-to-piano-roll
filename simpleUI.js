@@ -16,6 +16,7 @@
 
 		let tracks = document.createElement('div')
 		tracks.className = 'tracks'
+		tracks.innerHTML = '<div class="tracks__shroud"></div><div class="tracks__shroud"></div>'
 		controls.appendChild(tracks)
 
 		const updateConfigTransposeOnKeyUp = function(trkIndex, e) {
@@ -138,7 +139,35 @@
 
 	function updateSVG() {
 		document.querySelector('#result > .resultSvg').innerHTML = pianoRollSvg.render(config)
+		updateShroud()
 		sessionStorage['config'] = JSON.stringify(config)
+	}
+
+	function updateShroud() {
+		let shroudElms = controls.querySelectorAll('.tracks__shroud')
+		
+		let x0 = controls.querySelector('.trackRow__preview').offsetLeft
+		let trackWidth = controls.querySelector('.trackRow__preview').clientWidth
+
+		let song = pianoRollSvg.getSong()
+		let timeDiv = (config.timeDivision || song.timeDivision) * config.barSubdivisions
+		let barWidth = trackWidth / (song.duration / timeDiv)
+
+		if (config.trimStart) {
+			shroudElms[0].style.left = `${x0}px`
+			shroudElms[0].style.width = `${config.trimStart * barWidth}px`
+			shroudElms[0].style.display = 'block'
+		} else {
+			shroudElms[0].style.display = 'none'
+		}
+
+		if (config.trimEnd) {
+			shroudElms[1].style.right = 0
+			shroudElms[1].style.left = `${x0 + config.trimEnd * barWidth}px`
+			shroudElms[1].style.display = 'block'
+		} else {
+			shroudElms[1].style.display = 'none'
+		}
 	}
 
 	let updateTimer
@@ -160,6 +189,10 @@
 			reader.onerror = rej
 		})
 	}
+
+	window.addEventListener('resize', () => {
+		updateShroud()
+	})
 
 	document.querySelector('#filePicker').addEventListener('change', function(e) {
 		getBase64FromFile(this.files[0]).then((base64) => {
