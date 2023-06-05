@@ -4,12 +4,15 @@
 	const styles = `
 		<style>
 			svg { background-color: #fff; }
-			.line { stroke: #ddd; stroke-width: 1px; }
+			.line { stroke: #eee; stroke-width: 1px; }
 			.line_verse { stroke: #bbb; }
-			.line_C { stroke: #666; }
-			.line_F { stroke: #eee; }
-			.note { fill: #f0f0f0; stroke: #000; }
-			.note_black { fill: #666; stroke-width: 1px; }
+			.line_C { stroke: #333; stroke-width: 2px }
+			.line_F { stroke: #333; }
+			.line_blackKey { stroke: #ddd; }
+			.note { fill: #fff; stroke: #000; }
+			.note_black { fill: #666; }
+			.note_staggered { fill-opacity: 0.6; }
+			.note_black_staggered { fill: #000; fill-opacity: 0.5; }
 			.blackRow { fill: #ddd; }
 			.blackRow_lower { fill: #bbb; }
 			.octaveText { font-weight: bold; font-size: 24px; font-family: 'Helvetica Neue', Helvetica, sans-serif; fill: #aaa; }
@@ -140,6 +143,13 @@
 				group.openingTag = group.openingTag.slice(0, -1) + ` data-height="${height}">`
 				content.push(group)
 
+				// vertical/bar lines
+				for (let i = 0; i <= rowDuration; i += timeDiv) {
+					let x = i / rowDuration * cfg.width + 0.5
+					let classes = [ 'line', (i / timeDiv) % this._config.barSubdivisions == 0 && 'line_verse' ].filter(Boolean).join(' ')
+					group.push(`<line class="${classes}" x1="${x}" y1="0" x2="${x}" y2="${height}" />`)
+				}
+
 				// background stripes
 				if (cfg.staggered) {
 					for (let i = maxNote; i > minNote - 2; i--) {
@@ -147,7 +157,8 @@
 
 						if (blackKeys[i % 12]) {
 							let classes = [ 'blackRow', (i % 12) < 4 && 'blackRow_lower' ].filter(Boolean).join(' ')
-							group.push(`<rect class="${classes}" x="1" y="${this._getYTop(i, maxNote) + lh4}" width="${cfg.width - 1}" height="${lh2}" />`)
+							// group.push(`<rect class="${classes}" x="1" y="${y + lh4}" width="${cfg.width - 1}" height="${lh2}" />`)
+							group.push(`<line class="line line_blackKey" x1="0" y1="${y + lh2 + 0.5}" x2="${cfg.width}" y2="${y + lh2 + 0.5}" />`)
 						}
 					}
 				} else {
@@ -156,13 +167,6 @@
 						let classes = [ 'blackRow', (i % 12) < 4 && 'blackRow_lower' ].filter(Boolean).join(' ')
 						group.push(`<rect class="${classes}" x="1" y="${this._getYTop(i, maxNote) + 0.5}" width="${cfg.width - 1}" height="${cfg.lineHeight}" />`)
 					}
-				}
-
-				// vertical/bar lines
-				for (let i = 0; i <= rowDuration; i += timeDiv) {
-					let x = i / rowDuration * cfg.width + 0.5
-					let classes = [ 'line', (i / timeDiv) % this._config.barSubdivisions == 0 && 'line_verse' ].filter(Boolean).join(' ')
-					group.push(`<line class="${classes}" x1="${x}" y1="0" x2="${x}" y2="${height}" />`)
 				}
 
 				// labels
@@ -180,7 +184,6 @@
 					let y = (i == maxNote + 1 )? 0 : this._getYBottom(i, maxNote) + 0.5
 
 					if (i % 12 == 0) {
-						// group.push(`<line class="line" x1="0" y1="${y}" x2="${cfg.width}" y2="${y}" />`)
 						group.push(`<line class="line line_C" x1="0" y1="${y}" x2="${cfg.width}" y2="${y}" />`)
 					} else {
 						group.push(`<line class="line line_F" x1="0" y1="${y}" x2="${cfg.width}" y2="${y}" />`)
@@ -189,9 +192,21 @@
 
 				// notes
 				for (let note of row.notes) {
-					let classes = [ 'note', blackKeys[note.note % 12] && 'note_black' ].filter(Boolean).join(' ')
-					group.push(`<rect class="${classes}" x="${note.time / rowDuration * cfg.width + 0.5}" y="${this._getYTop(note.note, maxNote) + 0.5}" `
-						+ `width="${note.duration / rowDuration * cfg.width}" height="${cfg.lineHeight}" />`)
+					let isBlack = blackKeys[note.note % 12]
+					let classes = [
+						'note',
+						isBlack && 'note_black',
+						cfg.staggered && 'note_staggered',
+						cfg.staggered && isBlack && 'note_black_staggered',
+					].filter(Boolean).join(' ')
+
+					group.push(
+						`<rect class="${classes}" ` +
+						`x="${note.time / rowDuration * cfg.width + 0.5}" ` +
+						`y="${this._getYTop(note.note, maxNote) + 0.5 + (cfg.staggered ? 1 : 0)}" ` +
+						`width="${note.duration / rowDuration * cfg.width}" ` +
+						`height="${cfg.lineHeight - (cfg.staggered ? 2 : 0)}" />`
+					)
 				}
 
 				curY += height + cfg.rowSpacing
