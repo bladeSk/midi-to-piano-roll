@@ -9,7 +9,7 @@
 			.line_C { stroke: #333; stroke-width: 2px }
 			.line_F { stroke: #333; }
 			.line_blackKey { stroke: #ddd; }
-			.note { fill: #fff; stroke: #000; }
+			.note { fill: #eee; stroke: #000; }
 			.note_black { fill: #666; }
 			.note_staggered { fill-opacity: 0.6; }
 			.note_black_staggered { fill: #000; fill-opacity: 0.5; }
@@ -177,19 +177,6 @@
 						`${Math.floor(i / 12) - 1}</text>`)
 				}
 
-				// horizontal guide lines
-				for (let i = maxNote + 1; i >= minNote; i--) {
-					if (i != maxNote + 1 && i % 12 != 0 && i % 12 != 5) continue
-					
-					let y = (i == maxNote + 1 )? 0 : this._getYBottom(i, maxNote) + 0.5
-
-					if (i % 12 == 0) {
-						group.push(`<line class="line line_C" x1="0" y1="${y}" x2="${cfg.width}" y2="${y}" />`)
-					} else {
-						group.push(`<line class="line line_F" x1="0" y1="${y}" x2="${cfg.width}" y2="${y}" />`)
-					}
-				}
-
 				// notes
 				for (let note of row.notes) {
 					let isBlack = blackKeys[note.note % 12]
@@ -203,10 +190,23 @@
 					group.push(
 						`<rect class="${classes}" ` +
 						`x="${note.time / rowDuration * cfg.width + 0.5}" ` +
-						`y="${this._getYTop(note.note, maxNote) + 0.5 + (cfg.staggered ? 1 : 0)}" ` +
+						`y="${this._getYTop(note.note, maxNote) + 0.5}" ` +
 						`width="${note.duration / rowDuration * cfg.width}" ` +
-						`height="${cfg.lineHeight - (cfg.staggered ? 2 : 0)}" />`
+						`height="${cfg.lineHeight}" />`
 					)
+				}
+
+				// horizontal guide lines
+				for (let i = maxNote + 1; i >= minNote; i--) {
+					if (i != maxNote + 1 && i % 12 != 0 && i % 12 != 5) continue
+					
+					let y = (i == maxNote + 1 )? 0 : this._getYBottom(i, maxNote) + 0.5
+
+					if (i % 12 == 0) {
+						group.push(`<line class="line line_C" x1="0" y1="${y}" x2="${cfg.width}" y2="${y}" />`)
+					} else {
+						group.push(`<line class="line line_F" x1="0" y1="${y}" x2="${cfg.width}" y2="${y}" />`)
+					}
 				}
 
 				curY += height + cfg.rowSpacing
