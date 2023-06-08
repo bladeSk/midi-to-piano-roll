@@ -14,7 +14,7 @@
 			timeDivision: 240,
 			title: "Theme Hospital - 6s & 7s",
 			tracksToRender: { 0: true, 3: true },
-			transposeTracks: { 3: 12 },
+			trackOptions: { 3: { transpose: 12, style: 'leftHanded' } },
 			trimEnd: 32,
 			trimStart: null,
 			width: 960,

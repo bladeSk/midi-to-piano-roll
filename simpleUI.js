@@ -14,6 +14,23 @@
 		title.textContent = filename
 		controls.appendChild(title)
 
+		pianoRollSvg = new PianoRollSvg(midiB64)
+
+		renderTrackControls()
+		renderSVGControls()
+		renderActions()
+
+		// editable song title
+		document.querySelector('#result > .resultHeading').textContent = config.title
+		document.querySelector('#result > .resultHeading').addEventListener('input', function (e) {
+			config.title = this.textContent
+			sessionStorage['config'] = JSON.stringify(config)
+		})
+
+		updateSVG()
+	}
+
+	function renderTrackControls() {
 		let tracks = document.createElement('div')
 		tracks.className = 'tracks'
 		tracks.innerHTML = '<div class="tracks__shroud"></div><div class="tracks__shroud"></div>'
@@ -22,10 +39,56 @@
 		const updateConfigTransposeOnKeyUp = function(trkIndex, e) {
 			let val = this.value ? parseInt(this.value) : 0
 			if (isNaN(val)) return
-			config.transposeTracks[trkIndex] = Math.max(-96, Math.min(96, val))
+
+			if (!config.trackOptions[trkIndex]) config.trackOptions[trkIndex] = {}
+
+			config.trackOptions[trkIndex].transpose = Math.max(-96, Math.min(96, val))
+
 			updateDebounced()
 		}
 
+		let trkHeader = document.createElement('div')
+		trkHeader.className = 'trackRow trackRow_header'
+		trkHeader.innerHTML = 
+			'<span class="trackRow__name">Track</span>'+
+			'<span class="trackRow__transpose">Transpose</span>'+
+			'<span class="trackRow__style">Style</span>'
+		tracks.appendChild(trkHeader)
+
+		const styleOptions = `<option value="normal">Normal</option><option value="leftHanded">Left hand</option>`
+
+		pianoRollSvg.getSong().tracks.forEach((trk, i) => {
+			let trkRow = document.createElement('div')
+			trkRow.className = 'trackRow'
+			trkRow.innerHTML = 
+				'<label class="trackRow__name"><input type="checkbox"/><span></span></label>'+
+				'<input type="text" class="trackRow__transpose" placeholder="0" />'+
+				`<select class="trackRow__style">${styleOptions}</select>`+
+				'<span class="trackRow__preview"></span>'
+			trkRow.querySelector('.trackRow__name > span').textContent = `${trk.title} - ${trk.notes.length}♪`
+			trkRow.querySelector('.trackRow__name > input').checked = !!config.tracksToRender[i]
+			trkRow.querySelector('.trackRow__preview').innerHTML = pianoRollSvg.renderTrackPreview(trk)
+			let transposeInput = trkRow.querySelector('.trackRow__transpose')
+			transposeInput.value = config.trackOptions[i]?.transpose || ''
+			transposeInput.addEventListener('keyup', updateConfigTransposeOnKeyUp.bind(transposeInput, i))
+			tracks.appendChild(trkRow)
+
+			trkRow.querySelector('.trackRow__name > input').addEventListener('change', function(e) {
+				config.tracksToRender[i] = this.checked
+				updateSVG()
+			})
+
+			let styleSelect = trkRow.querySelector('.trackRow__style')
+			styleSelect.value = config.trackOptions[i]?.style == 'leftHanded' ? 'leftHanded' : 'normal'
+			styleSelect.addEventListener('change', function(e) {
+				if (!config.trackOptions[i]) config.trackOptions[i] = {}
+				config.trackOptions[i].style = this.value
+				updateSVG()
+			})
+		})
+	}
+
+	function renderSVGControls() {
 		const updateConfigNumberOnKeyUp = function(cfgId, e) {
 			let val = parseInt(this.value)
 			if (isNaN(val)) return
@@ -40,46 +103,21 @@
 			updateDebounced()
 		}
 
-		pianoRollSvg = new PianoRollSvg(midiB64)
-
-		pianoRollSvg.getSong().tracks.forEach((trk, i) => {
-			let trkRow = document.createElement('div')
-			trkRow.className = 'trackRow'
-			trkRow.innerHTML = `<span class="trackRow__num">${i + 1}</span>`+
-				`<label class="trackRow__name"><input type="checkbox"/><span></span></label>`+
-				`<input type="text" class="trackRow__transpose" placeholder="Transpose" />`+
-				`<span class="trackRow__preview"></span>`
-			trkRow.querySelector('.trackRow__name > span').textContent = `${trk.title} - ${trk.notes.length}♪`
-			trkRow.querySelector('.trackRow__name > input').checked = !!config.tracksToRender[i]
-			trkRow.querySelector('.trackRow__preview').innerHTML = pianoRollSvg.renderTrackPreview(trk)
-			let transposeInput = trkRow.querySelector('.trackRow__transpose')
-			transposeInput.value = config.transposeTracks[i] || ''
-			transposeInput.addEventListener('keyup', updateConfigTransposeOnKeyUp.bind(transposeInput, i))
-			tracks.appendChild(trkRow)
-
-			trkRow.querySelector('.trackRow__name > input').addEventListener('change', function(e) {
-				config.tracksToRender[i] = this.checked
-				updateSVG()
-			})
-		})
-
 		let cfg = document.createElement('div')
 		cfg.className = 'cfg'
 		cfg.innerHTML = '<div>'+
-			'<label>Bars per row <input type="text" class="cfg__barsPerRow"/></label>'+
-			'<label>Bar subdivisions <input type="text" class="cfg__barSubdivisions"/></label>'+
+			'<label>Style <select class="cfg__style"><option value="staggered">Staggered - like piano keys</option><option value="grid">Grid - like DAW</option></select></label>'+
 			'<label>Line height <input type="text" class="cfg__lineHeight"/></label>'+
 			'<label>Row spacing <input type="text" class="cfg__rowSpacing"/></label>'+
 			'<label>Width <input type="text" class="cfg__width"/> px</label>'+
 			'</div><div>'+
-			'<label>Style <select class="cfg__style"><option value="staggered">Staggered - like piano keys</option><option value="grid">Grid - like DAW</option></select></label>'+
+			'<label>Bars per row <input type="text" class="cfg__barsPerRow"/></label>'+
+			'<label>Bar subdivisions <input type="text" class="cfg__barSubdivisions"/></label>'+
 			'<label>MIDI tempo <input type="text" class="cfg__timeDivision"/></label>'+
 			'<label>Hide notes shorter than <input type="text" class="cfg__removeShorterThan"/> ticks</label>'+
 			'</div><div>'+
 			'<label>Skip <input type="text" class="cfg__trimStart" placeholder="0"/> bars</label>'+
 			'<label>End at bar #<input type="text" class="cfg__trimEnd"/></label>'+
-			'</div><div class="cfg__actions">'+
-			'<button class="cfg__print">🖨️ Print piano roll</button><button class="cfg__download">📥 Download SVG</button>'+
 			'</div>'
 		controls.appendChild(cfg)
 
@@ -107,13 +145,22 @@
 			config.staggered = this.value == 'staggered'
 			updateSVG()
 		})
+	}
 
-		cfg.querySelector(`.cfg__print`).addEventListener('click', (e) => {
+	function renderActions() {
+		let actions = document.createElement('div')
+		actions.className = 'actions'
+		actions.innerHTML = '<div class="cfg__actions">'+
+			'<button class="actions__print">🖨️ Print piano roll</button><button class="actions__download">📥 Download SVG</button>'+
+			'</div>'
+		controls.appendChild(actions)
+
+		actions.querySelector('.actions__print').addEventListener('click', (e) => {
 			window.print()
 			e.preventDefault()
 		})
 
-		cfg.querySelector(`.cfg__download`).addEventListener('click', (e) => {
+		actions.querySelector('.actions__download').addEventListener('click', (e) => {
 		    let a = document.createElement('a')
 			a.setAttribute('href', 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(pianoRollSvg.render({
 				...config,
@@ -127,14 +174,6 @@
 
 			e.preventDefault()
 		})
-
-		document.querySelector('#result > .resultHeading').textContent = config.title
-		document.querySelector('#result > .resultHeading').addEventListener('input', function (e) {
-			config.title = this.textContent
-			sessionStorage['config'] = JSON.stringify(config)
-		})
-
-		updateSVG()
 	}
 
 	function updateSVG() {

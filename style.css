@@ -43,6 +43,10 @@ button {
 	flex-direction: row;
 }
 
+.trackRow_header {
+	font-weight: bold;
+}
+
 .trackRow:nth-child(odd) .previewRoll {
 	background: #eee;
 }
@@ -59,12 +63,19 @@ button {
 
 .trackRow__name {
 	display: inline-block;
-	width: 200px;
+	width: 160px;
 	margin-right: 16px;
 }
 
 .trackRow__transpose {
+	box-sizing: border-box;
 	width: 64px;
+	margin-right: 16px;
+}
+
+.trackRow__style {
+	box-sizing: border-box;
+	width: 72px;
 }
 
 .trackRow__preview {
@@ -106,11 +117,11 @@ button {
 	width: 48px;
 }
 
-.cfg__actions {
+.actions {
 	text-align: center;
 }
 
-.cfg__actions button + button {
+.actions button + button {
 	margin-left: 16px;
 }
 

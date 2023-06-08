@@ -44,7 +44,7 @@
 				lineHeight: 10,
 				rowSpacing: 48,
 				tracksToRender: { 0: true },
-				transposeTracks: {},
+				trackOptions: {}, // { 1: { transpose: number, style: 'normal' | 'leftHanded' }, ... }
 				staggered: true,
 				splitSVGs: false,
 				trimStart: null,
@@ -187,13 +187,27 @@
 						cfg.staggered && isBlack && 'note_black_staggered',
 					].filter(Boolean).join(' ')
 
-					group.push(
-						`<rect class="${classes}" ` +
-						`x="${note.time / rowDuration * cfg.width + 0.5}" ` +
-						`y="${this._getYTop(note.note, maxNote) + 0.5}" ` +
-						`width="${note.duration / rowDuration * cfg.width}" ` +
-						`height="${cfg.lineHeight}" />`
-					)
+					if (note.style == 'leftHanded') {
+						let x1 = note.time / rowDuration * cfg.width + 0.5
+						let x2 = x1 + (note.duration / rowDuration * cfg.width)
+						let y1 = this._getYTop(note.note, maxNote) + 0.5
+						let y2 = y1 + cfg.lineHeight
+						let c = Math.round(cfg.lineHeight * 0.4)
+
+						group.push(
+							`<polygon class="${classes}" `+
+							`points="${x1+c},${y1} ${x2},${y1} ${x2},${y2} ${x1},${y2} ${x1},${y1+c}" />`
+						)
+					} else {
+						group.push(
+							`<rect class="${classes}" ` +
+							`x="${note.time / rowDuration * cfg.width + 0.5}" ` +
+							`y="${this._getYTop(note.note, maxNote) + 0.5}" ` +
+							`width="${note.duration / rowDuration * cfg.width}" ` +
+							`height="${cfg.lineHeight}" />`
+						)
+					}
+
 				}
 
 				// horizontal guide lines
@@ -239,7 +253,7 @@
 		 */
 		_getMergedTracks() {
 			let trkDict = this._config.tracksToRender
-			let transposeDict = this._config.transposeTracks
+			let trkOptDict = this._config.trackOptions
 			let notes = []
 			let minNote = 127
 			let maxNote = 0
@@ -247,27 +261,40 @@
 			for (let i = 0; i < this._song.tracks.length; i++) {
 				if (!trkDict[i]) continue
 
-				if (transposeDict[i]) {
-					let trans = transposeDict[i]
+				let notesToAdd
+
+				if (trkOptDict[i] && trkOptDict[i].transpose) {
+					let transpose = trkOptDict[i].transpose
+
+					notesToAdd = []
 
 					for (let note of this._song.tracks[i].notes) {
 						let newNote = {
 							...note,
-							note: note.note + trans,
+							note: note.note + transpose,
 						}
 
 						minNote = Math.min(minNote, newNote.note)
 						maxNote = Math.max(maxNote, newNote.note)
 
-						notes.push(newNote)
+						notesToAdd.push(newNote)
 					}
 				} else {
 					let trk = this._song.tracks[i]
 					minNote = Math.min(minNote, trk.minNote)
 					maxNote = Math.max(maxNote, trk.maxNote)
 
-					notes = notes.concat(trk.notes)
+					notesToAdd = trk.notes
 				}
+
+				if (trkOptDict[i] && trkOptDict[i].style && trkOptDict[i].style != 'normal') {
+					notesToAdd = notesToAdd.map((note) => ({
+						...note,
+						style: trkOptDict[i].style,
+					}))
+				}
+
+				notes = notes.concat(notesToAdd)
 			}
 
 			return {
