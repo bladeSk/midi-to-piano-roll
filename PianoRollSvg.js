@@ -127,6 +127,7 @@
 			let content = []
 			content.push(styles)
 
+			const thickRowCompensation = 1
 			let rows = this._sliceTrackToRows(this._trimTrack(this._getMergedTracks()))
 			let rowDuration = this._barDuration * this._config.barsPerRow
 			let curY = 0
@@ -138,9 +139,15 @@
 			for (let row of rows) {
 				let minNote = Math.max(Math.floor(row.minNote / 12) * 12, Math.floor((row.minNote - 5) / 12) * 12 + 5) // snap to C or F in the octave
 				let maxNote = row.maxNote - minNote < 11 ? minNote + 11 : row.maxNote
+
+				// force top key to end after C or F
+				if (cfg.staggered && (maxNote % 12 != 11 || maxNote % 12 != 4)) {
+					while (maxNote % 12 != 11 && maxNote % 12 != 4) maxNote++
+				}
+
 				let height = this._getYBottom(minNote, maxNote)
 				let group = g(0, curY, 'row')
-				group.openingTag = group.openingTag.slice(0, -1) + ` data-height="${height}">`
+				group.openingTag = group.openingTag.slice(0, -1) + ` data-height="${height + thickRowCompensation}">`
 				content.push(group)
 
 				// vertical/bar lines
@@ -150,22 +157,30 @@
 					group.push(`<line class="${classes}" x1="${x}" y1="0" x2="${x}" y2="${height}" />`)
 				}
 
-				// background stripes
 				if (cfg.staggered) {
 					for (let i = maxNote; i > minNote - 2; i--) {
-						let y = this._getYTop(i, maxNote)
-
+						// horizontal lines on black keys
 						if (blackKeys[i % 12]) {
-							let classes = [ 'blackRow', (i % 12) < 4 && 'blackRow_lower' ].filter(Boolean).join(' ')
-							// group.push(`<rect class="${classes}" x="1" y="${y + lh4}" width="${cfg.width - 1}" height="${lh2}" />`)
+							let y = this._getYTop(i, maxNote)
 							group.push(`<line class="line line_blackKey" x1="0" y1="${y + lh2 + 0.5}" x2="${cfg.width}" y2="${y + lh2 + 0.5}" />`)
+						} else if (i % 12 == 5) { // F lines
+							let y = this._getYBottom(i, maxNote)
+							group.push(`<line class="line line_F" x1="0" y1="${y + 0.5}" x2="${cfg.width}" y2="${y + 0.5}" />`)
 						}
 					}
 				} else {
+					// background stripes
 					for (let i = minNote; i <= maxNote; i++) {
 						if (!blackKeys[i % 12]) continue
 						let classes = [ 'blackRow', (i % 12) < 4 && 'blackRow_lower' ].filter(Boolean).join(' ')
 						group.push(`<rect class="${classes}" x="1" y="${this._getYTop(i, maxNote) + 0.5}" width="${cfg.width - 1}" height="${cfg.lineHeight}" />`)
+					}
+
+					// F lines
+					for (let i = minNote; i <= maxNote; i++) {
+						if (i % 12 != 5) continue
+						let y = this._getYBottom(i, maxNote)
+						group.push(`<line class="line line_F" x1="1" y1="${y + 0.5}" x2="${cfg.width}" y2="${y + 0.5}" />`)
 					}
 				}
 
@@ -210,23 +225,26 @@
 
 				}
 
-				// horizontal guide lines
+				// horizontal guide lines (octaves and top line)
 				for (let i = maxNote + 1; i >= minNote; i--) {
-					if (i != maxNote + 1 && i % 12 != 0 && i % 12 != 5) continue
+					if (i != maxNote + 1 && i % 12 != 0) continue
 					
-					let y = (i == maxNote + 1 )? 0 : this._getYBottom(i, maxNote) + 0.5
+					let y = (i == maxNote + 1 ) ? 0.5 : this._getYBottom(i, maxNote) + 0.5
 
-					if (i % 12 == 0) {
-						group.push(`<line class="line line_C" x1="0" y1="${y}" x2="${cfg.width}" y2="${y}" />`)
-					} else {
-						group.push(`<line class="line line_F" x1="0" y1="${y}" x2="${cfg.width}" y2="${y}" />`)
+					if (i % 12 == 0) { // C line
+						if (y == 0.5) y += thickRowCompensation - 0.5
+						group.push(`<line class="line line_C" x1="0" y1="${y}" x2="${cfg.width + 1}" y2="${y}" />`)
+					} else if (i % 12 == 5) { // F line
+						group.push(`<line class="line line_F" x1="0" y1="${y}" x2="${cfg.width + 1}" y2="${y}" />`)
+					} else { // top line that is not C
+						group.push(`<line class="line line_blackKey" x1="0" y1="${y}" x2="${cfg.width + 1}" y2="${y}" />`)
 					}
 				}
 
 				curY += height + cfg.rowSpacing
 			}
 
-			return [ content, curY ]
+			return [ content, curY + thickRowCompensation ]
 		}
 
 		_getYTop(note, maxNote) {
