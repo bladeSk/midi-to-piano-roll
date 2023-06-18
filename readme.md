@@ -4,8 +4,10 @@
 
 A tool that converts MIDI files into printable piano rolls. Primarily intended for people who prefer piano rolls found in DAWs over sheet music.
 
-You can use the tool [right here](https://bladeSk.github.io/midi-to-piano-roll). Just drop your local MIDI files, tweak some knobs and print.
+Just drop your local MIDI files, tweak some knobs and print.
 
+## Live app
+### https://bladeSk.github.io/midi-to-piano-roll
 
 ## Issues
 
