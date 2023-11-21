@@ -14,7 +14,6 @@
 			.note_staggered { fill-opacity: 0.6; }
 			.note_black_staggered { fill: #000; fill-opacity: 0.5; }
 			.blackRow { fill: #ddd; }
-			.blackRow_lower { fill: #bbb; }
 			.octaveText { font-weight: bold; font-size: 24px; font-family: 'Helvetica Neue', Helvetica, sans-serif; fill: #aaa; }
 		</style>\n`
 

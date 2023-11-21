@@ -1,6 +1,6 @@
 {
   "name": "midi-to-piano-roll",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "PianoRollSvg.js",
   "author": "blade.sk",
   "license": "MIT",
