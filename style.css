@@ -143,6 +143,10 @@ button {
 }
 
 @media print {
+	body {
+		margin: 0;
+	}
+
 	#header, #controls {
 		display: none;
 	}
